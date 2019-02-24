@@ -1,0 +1,215 @@
+
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package raytriangleintersection_v3;
+
+// Source:  https://cdk.github.io/cdk/1.5/docs/api/org/openscience/cdk/geometry/surface/Triangle.html
+//  https://github.com/hharrison/vecmath/tree/master/src/javax/vecmath
+// https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+
+class Triangle
+{
+    public MyPoint3d p0;
+    public MyPoint3d p1;
+    public MyPoint3d p2;
+}
+
+class MyPoint3d
+{
+    public double x, y, z;
+    
+    public MyPoint3d()
+    {
+        
+    }
+    
+    public MyPoint3d(double x, double y, double z)
+    {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+    
+    public final void scaleAdd(double s, MyVector3d t1, MyPoint3d t2)
+    {
+    this.x = s*t1.x + t2.x;
+    this.y = s*t1.y + t2.y;
+    this.z = s*t1.z + t2.z;
+    }
+    
+}
+
+class MyVector3d
+{
+    public double x, y, z;
+    
+    public MyVector3d()
+    {
+        
+    }
+    
+    public MyVector3d(double x, double y, double z)
+    {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+    
+    public final void sub(MyPoint3d t1, MyPoint3d t2)
+    {
+    this.x = t1.x - t2.x;
+    this.y = t1.y - t2.y;
+    this.z = t1.z - t2.z;
+    }
+    
+    public final double dot(MyVector3d v1)
+    {
+      return (this.x*v1.x + this.y*v1.y + this.z*v1.z);
+    }
+    
+      public final void cross(MyVector3d v1, MyVector3d v2)
+    {
+        double x,y;
+
+        x = v1.y*v2.z - v1.z*v2.y;
+        y = v2.x*v1.z - v2.z*v1.x;
+        this.z = v1.x*v2.y - v1.y*v2.x;
+        this.x = x;
+        this.y = y;
+    }
+
+
+
+}
+
+/**
+ *
+ * @author Russell Brown
+ */
+public class RayTriangleIntersection_v3 {
+
+    
+    
+    private static double EPSILON = 0.0000001;
+
+    
+    
+    //https://www.geeksforgeeks.org/program-to-find-equation-of-a-plane-passing-through-3-points/
+    // Function to find equation of plane.
+    static void equation_plane(float x1, float y1,  
+                               float z1, float x2,
+                               float y2, float z2,
+                               float x3, float y3,
+                               float z3)
+    {
+        float a1 = x2 - x1;
+        float b1 = y2 - y1;
+        float c1 = z2 - z1;
+        float a2 = x3 - x1;
+        float b2 = y3 - y1;
+        float c2 = z3 - z1;
+        float a = b1 * c2 - b2 * c1;
+        float b = a2 * c1 - a1 * c2;
+        float c = a1 * b2 - b1 * a2;
+        float d = (- a * x1 - b * y1 - c * z1);
+        System.out.println("equation of plane is " + a +
+                           " x + " + b + " y + " + c +  
+                           " z + " + d + " = 0.");
+    }
+
+    //https://www.geeksforgeeks.org/distance-between-a-point-and-a-plane-in-3-d/
+    // Function to find distance
+    static void shortest_distance(float x1, float y1,  
+                                  float z1, float a,  
+                                  float b, float c,  
+                                  float d)
+    {
+        d = Math.abs((a * x1 + b *  
+                     y1 + c * z1 + d));  
+        float e = (float)Math.sqrt(a * a + b *  
+                                   b + c * c);  
+        System.out.println("Perpendicular distance " +  
+                                       "is " + d / e);  
+    }
+    
+    
+    
+    public static boolean rayIntersectsTriangle(MyPoint3d rayOrigin,
+                                                MyVector3d rayVector,
+                                                Triangle inTriangle,
+                                                MyPoint3d outIntersectionPoint) {
+        MyPoint3d vertex0 = inTriangle.p0;
+        MyPoint3d vertex1 = inTriangle.p1;
+        MyPoint3d vertex2 = inTriangle.p2;
+        MyVector3d edge1 = new MyVector3d();
+        MyVector3d edge2 = new MyVector3d();
+        MyVector3d h = new MyVector3d();
+        MyVector3d s = new MyVector3d();
+        MyVector3d q = new MyVector3d();
+        double a, f, u, v;
+        edge1.sub(vertex1, vertex0);
+        edge2.sub(vertex2, vertex0);
+        h.cross(rayVector, edge2);
+        a = edge1.dot(h);
+        if (a > -EPSILON && a < EPSILON) {
+            return false;    // This ray is parallel to this triangle.
+        }
+        f = 1.0 / a;
+        s.sub(rayOrigin, vertex0);
+        u = f * (s.dot(h));
+        if (u < 0.0 || u > 1.0) {
+            return false;
+        }
+        q.cross(s, edge1);
+        v = f * rayVector.dot(q);
+        if (v < 0.0 || u + v > 1.0) {
+            return false;
+        }
+        // At this stage we can compute t to find out where the intersection point is on the line.
+        double t = f * edge2.dot(q);
+        if (t > EPSILON) // ray intersection
+        {
+            outIntersectionPoint.scaleAdd(t, rayVector, rayOrigin);
+            return true;
+        } else // This means that there is a line intersection but not a ray intersection.
+        {
+            return false;
+        }
+    }
+    
+    
+    
+    
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        // TODO code application logic here
+        
+        MyPoint3d origin = new MyPoint3d(0, 0, 0.5);
+        MyVector3d vector = new MyVector3d(0, 1, 0);
+        
+        Triangle triangle = new Triangle();
+        triangle.p0 = new MyPoint3d(-1, 1, 0);
+        triangle.p1 = new MyPoint3d(1, 1, 0);
+        triangle.p2 = new MyPoint3d(0, 2, 1);
+        
+        MyPoint3d ip = new MyPoint3d();
+        
+        boolean result = rayIntersectsTriangle(origin, vector, triangle, ip);
+        
+        System.out.println(result + "  " + ip.x + " " + ip.y + " " + ip.z);
+        
+        
+        
+        
+        
+    }
+    
+    
+    
+}
