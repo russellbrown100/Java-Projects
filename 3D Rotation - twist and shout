@@ -1,0 +1,111 @@
+source:  http://twist-and-shout.appspot.com
+
+
+
+class Point3D
+{
+    public double x;
+    public double y;
+    public double z;
+    
+    public Point3D(double x, double y, double z)
+    {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+}
+
+/**
+ *
+ * @author Russell Brown
+ */
+public class RotationTest_v6 {
+    
+    
+    
+    public static  double TOLERANCE = 1E-9;
+
+    public static double longEnough(double u, double v, double w) {
+        double l = Math.sqrt(u*u + v*v + w*w);
+        if (l > TOLERANCE) {
+            return l;
+        } else {
+            return -1;
+        }
+    }
+
+    //http://twist-and-shout.appspot.com
+     public static double[] rotPointFromFormula(double a, double b, double c,
+                                               double u, double v, double w,
+                                               double x, double y, double z,
+                                               double theta) {
+        // We normalize the direction vector.
+        double l;
+        if ( (l = longEnough(u, v, w)) < 0) {
+            System.out.println("RotationMatrix direction vector too short");
+            return null;             // Don't bother.
+        }
+        // Normalize the direction vector.
+        u = u/l;  // Note that is not "this.u".
+        v = v/l;
+        w = w/l;
+        // Set some intermediate values.
+        double u2 = u*u;
+        double v2 = v*v;
+        double w2 = w*w;
+        double cosT = Math.cos(theta);
+        double oneMinusCosT = 1 - cosT;
+        double sinT = Math.sin(theta);
+
+        // Use the formula in the paper.
+        double[] p = new double[3];
+        p[0] = (a*(v2 + w2) - u*(b*v + c*w - u*x - v*y - w*z)) * oneMinusCosT
+                + x*cosT
+                + (-c*v + b*w - w*y + v*z)*sinT;
+
+        p[1] = (b*(u2 + w2) - v*(a*u + c*w - u*x - v*y - w*z)) * oneMinusCosT
+                + y*cosT
+                + (c*u - a*w + w*x - u*z)*sinT;
+
+        p[2] = (c*(u2 + v2) - w*(a*u + b*v - u*x - v*y - w*z)) * oneMinusCosT
+                + z*cosT
+                + (-b*u + a*v - v*x + u*y)*sinT;
+
+        return p;
+    }
+
+
+
+    public static double DegreesToRadians(double degrees)
+    {
+        return (degrees * Math.PI) / 180;
+    }
+
+
+
+
+
+    public static double RadiansToDegrees(double radians)
+    {
+        return radians * (180 / Math.PI);
+    }
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        // TODO code application logic here
+        
+        Point3D point = new Point3D(0, 1, 0);
+        
+        Point3D direction = new Point3D(1, -1, 1);
+        
+        double[] result = rotPointFromFormula(0, 0, 0, direction.x, direction.y, direction.z, point.x, point.y, point.z, DegreesToRadians(45));
+        
+        System.out.println(result[0] + " " + result[1] + " " + result[2]);
+        
+        
+    }
+    
+}
