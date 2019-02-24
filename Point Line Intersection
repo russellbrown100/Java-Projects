@@ -1,0 +1,92 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package pointlineintersection;
+
+// Source:  http://paulbourke.net/geometry/pointlineplane/source.c
+
+class Point
+{
+    public float X, Y, Z;
+}
+
+
+/**
+ *
+ * @author Russell Brown
+ */
+public class PointLineIntersection {
+
+
+    static float Magnitude(Point Point1, Point Point2)
+    {
+        Point vector = new Point();
+
+        vector.X = Point2.X - Point1.X;
+        vector.Y = Point2.Y - Point1.Y;
+        vector.Z = Point2.Z - Point1.Z;
+        
+        return (float)Math.sqrt(vector.X * vector.X + vector.Y * vector.Y + vector.Z * vector.Z);
+    }
+    
+    static float DistancePointLine(Point Point, Point LineStart, Point LineEnd)
+    {
+        float LineMag;
+        float U;
+        Point Intersection = new Point();
+        
+        LineMag = Magnitude(LineEnd, LineStart);
+        
+        U = (((Point.X - LineStart.X) * (LineEnd.X - LineStart.X)) +
+         ((Point.Y - LineStart.Y) * (LineEnd.Y - LineStart.Y)) +
+                ((Point.Z - LineStart.Z) * (LineEnd.Z - LineStart.Z))) /
+                (LineMag * LineMag);
+                
+        if (U < 0 || U > 1)
+        {
+            return -1;
+        }
+        
+        Intersection.X = LineStart.X + U * (LineEnd.X - LineStart.X);
+        Intersection.Y = LineStart.Y + U * (LineEnd.Y - LineStart.Y);
+        Intersection.Z = LineStart.Z + U * (LineEnd.Z - LineStart.Z);
+        
+        float Distance = Magnitude(Point, Intersection);
+        
+        return Distance;
+                
+    }
+    
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        // TODO code application logic here
+        
+        
+        Point LineStart = new Point();
+        LineStart.X = -2;
+        LineStart.Y = 1;
+        LineStart.Z = 0;
+        
+        Point LineEnd = new Point();
+        LineEnd.X = -1.5f;
+        LineEnd.Y = 2;
+        LineEnd.Z = 0;
+        
+        Point Point = new Point();
+        Point.X = -1;
+        Point.Y = 1;
+        Point.Z = 0;
+        
+        
+        float dist = DistancePointLine(Point, LineStart, LineEnd);
+        
+        System.out.println(dist);
+        
+        
+    }
+    
+}
